@@ -1,44 +1,63 @@
-import renderer from 'react-test-renderer';
+import React from 'react';
+import renderer, { act } from 'react-test-renderer';
+import axios from 'axios';
 import Header from '../../../../app/javascript/components/Navbar/Header';
-import {propsDefault} from '../../__mocks__/props.mock';
 
-const mockAppBar = jest.fn();
-jest.mock('@mui/material/AppBar', ()=>(props)=>{
-    mockAppBar(props);
-    return (<mock-AppBar props={props}>{props.children}</mock-AppBar>);
-})
+// Mock for axios
+jest.mock('axios');
 
-const originalProperties = global.properties;
-Object.defineProperty(window, 'alert', { value: (val) => jest.fn(val)})
+// Mock for global properties
+const mockProperties = {
+    name: 'User'
+};
 
-
-beforeEach(() =>{
-    global.properties = propsDefault.properties;
-})
-
-afterEach(() => {
-    global.properties = originalProperties;
+beforeEach(() => {
+    // Setup the global properties and mocks before each test
+    global.properties = mockProperties;
+    jest.spyOn(window, 'alert').mockImplementation(() => {});
 });
 
-test('Navbar Load test', ()=>{
+afterEach(() => {
+    // Reset any mocks and restore original functions after each test
+    jest.clearAllMocks();
+    window.alert.mockRestore();
+});
+
+test('Navbar Load test', () => {
     const component = renderer.create(
         <Header />
-    )
+    );
     let tree = component.toJSON();
     expect(tree).toMatchSnapshot();
-})
+});
 
-test('Log Out test', ()=>{
+test('successful logout', async () => {
+    const mockResponse = { data: { redirect_path: '/login' } };
+    axios.get.mockResolvedValue(mockResponse);
+
     const component = renderer.create(
         <Header />
-    )
-    let tree = component.toJSON();
-    expect(tree).toMatchSnapshot();
-    
-    renderer.act(() =>{
-        component.root.find(el => el.props.id === 'logoutBtn').props.onClick()
-    })
+    );
 
-    tree = component.toJSON();
-    expect(tree).toMatchSnapshot();
-})
+    await act(async () => {
+        await component.root.findByProps({ id: 'logoutBtn' }).props.onClick();
+    });
+
+    expect(axios.get).toHaveBeenCalledWith('/logout');
+    // Additional assertions as needed
+});
+
+test('logout failure', async () => {
+    axios.get.mockRejectedValue(new Error('Logout failed'));
+
+    const component = renderer.create(
+        <Header />
+    );
+
+    await act(async () => {
+        await component.root.findByProps({ id: 'logoutBtn' }).props.onClick();
+    });
+
+    expect(axios.get).toHaveBeenCalledWith('/logout');
+    expect(window.alert).toHaveBeenCalledWith('Error: Could not Logout User');
+});
