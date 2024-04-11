@@ -2,12 +2,25 @@ class SlidesController < ApplicationController
   # POST /admin/events/:id/slides
   # POST /user/events/:id/slides
   def create
-    if "ADMIN".casecmp? session[:userType]
-      create_producer_slide
-    elsif "CLIENT".casecmp? session[:userType]
+    clients = [] # Define the clients array
+
+    if "ADMIN".casecmp?(session[:userType])
+      clients = create_producer_slide
+    elsif "CLIENT".casecmp?(session[:userType])
       create_client_slide
     else
       create_user_slide
+    end
+    
+    if params[:sendEmailNotification]
+      clients.each do |client|
+        begin
+          ClientMailer.deck_update_email(client).deliver_now
+        rescue => e
+          Rails.logger.error "Failed to send email to #{client.email}: #{e.message}"
+          # Handle the error appropriately
+        end
+      end
     end
   end
 
