@@ -1,7 +1,7 @@
 # app/mailers/client_mailer.rb
 
 class ClientMailer < ActionMailer::Base
-    default from: 'notifications@castnxt.com'
+    default from: 'castnxt@gmail.com' # TODO: creare gmail account for this
   
     def deck_update_email(client)
       @client = client
