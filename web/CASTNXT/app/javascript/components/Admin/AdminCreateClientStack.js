@@ -155,11 +155,14 @@ class AdminCreateClientStack extends Component {
       
       const payload = {
         clients: clients,
-        slides: slides
-      }
+        slides: slides,
+        sendEmailNotification: true // Added flag for email notification
+      };
+    
       
       const baseURL = window.location.href.split("#")[0]
-      
+    
+
       axios.post(baseURL+"/slides/", payload)
       .then((res) => {
         this.setState({

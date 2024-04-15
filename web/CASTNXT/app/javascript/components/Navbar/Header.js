@@ -42,8 +42,7 @@ const Header = (props) => {
                         </IconButton>
                         <Typography variant="h6" className={classes.title}></Typography>
                         <Typography color="inherit" style={{marginRight: "1%"}}>Welcome, {properties?.name}</Typography>
-                        <Typography><Button id='logoutBtn' variant="contained" onClick={logoutUser}>Logout</Button></Typography>
-                        
+                        <Typography><Button id='logoutBtn' variant="contained" onClick={() => window.location.href = "https://events360.herokuapp.com/logout"}>Logout</Button></Typography>
                     </Toolbar>
                 </AppBar>
             </header>
